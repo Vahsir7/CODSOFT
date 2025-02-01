@@ -1,154 +1,180 @@
-#TO DO list
+# TO DO List
 class Task:
     '''
-    This class hosts the task object of the to do list
-    Each task has a name, start date time, due date time and duration(which is calculated)
+    This class hosts the task object of the to-do list.
+    Each task has a name and a due date.
     '''
+
     def __init__(self, name, due):
         self.__name = name
         self.__due = due
-        #self.__duration = self.__due - self.__start
-    
+
     def get_name(self):
         return self.__name
-    
-    
+
     def get_due(self):
         return self.__due
-    
+
     def set_name(self, name):
         self.__name = name
-    
+
     def set_due(self, due):
         self.__due = due
-        #self.__duration = self.__due - self.__start
-    
+
+
 def display(tasks):
-    if tasks == []:
-        print("Great job there are no tasks left!")
+    if not tasks:
+        print("Great job! There are no tasks left.")
         return False
-    print("id\t\t|Name\t\t|due")
-    id = 1
-    for task in tasks:
-        print(f"{id}\t\t|{task.get_name()}\t\t|{task.get_due()}")
-        id += 1
+
+    max_id_width = len("ID")
+    max_name_width = len("Name")
+    max_due_width = len("Due")
+
+    for i, task in enumerate(tasks, start=1):
+        max_id_width = max(max_id_width, len(str(i)))
+        max_name_width = max(max_name_width, len(task.get_name()))
+        max_due_width = max(max_due_width, len(task.get_due()))
+
+    padding = 4
+    max_id_width += padding
+    max_name_width += padding
+    max_due_width += padding
+
+    header = f"{'ID':<{max_id_width}}| {'Name':<{max_name_width}}| {'Due':<{max_due_width}}"
+    print(header)
+
+    separator = "-" * len(header)
+    print(separator)
+
+    for i, task in enumerate(tasks, start=1):
+        row = f"{i:<{max_id_width}}| {task.get_name():<{max_name_width}}| {task.get_due():<{max_due_width}}"
+        print(row)
+
 
 def check(due):
-    if '/' in due:
-        due=due.split('/')
-    elif '-' in due:
-        due=due.split('-')
-    elif '.' in due:
-        due=due.split('.')
-    elif ' ' in due:
-        due=due.split(' ')
+    for sep in ['/', '-', '.', ' ']:
+        if sep in due:
+            due = due.split(sep)
+            break
     else:
         return False
-    print(due)
-    date = due[0]
-    if len(date) != 2:
-        
-        date = '0' + date
-    month = due[1]
-    if len(month) != 2:
-        month = '0' + month
-    year = due[2]
-    if len(year) != 4:
-        year = '20' + year
-    print(date,month,year)
-    due = date + '/' + month + '/' + year
-    print(due)
-    if len(due) != 10:
+
+    if len(due) != 3:
         return False
-    return due
+
+    day, month, year = due
+
+    if len(day) == 1:
+        day = '0' + day
+    if len(month) == 1:
+        month = '0' + month
+    if len(year) == 2:
+        year = '20' + year
+
+    formatted_date = f"{day}/{month}/{year}"
+
+    if len(formatted_date) != 10:
+        return False
+    return formatted_date
+
 
 tasks = []
-displaying_tasks = True
-#main
+
 if __name__ == "__main__":
-    while(True):
-        print("Welcome to the TO DO list")
-        print("Please select an option")
-        print("1. Add a task")
-        print("2. View tasks")
-        print("3. Finish a task")
+    while True:
+        print("\nWelcome to the TO-DO list")
+        print("1. Add a Task")
+        print("2. View Tasks")
+        print("3. Finish a Task")
         print("4. Exit")
         option = input("Enter your choice: ")
-        if option == '1': #Add a task
-            print("Enter the task name")
-            name = input()
-            print("Enter the due date in the format 'dd/mm/yyyy'")
-            
-            due = input()
+
+        if option == '1':  # Add a task
+            name = input("Enter the task name: ")
+            due = input("Enter the due date (dd/mm/yyyy): ")
+
             due = check(due)
-            if due == False:
-                print("Invalid date format")
+            if not due:
+                print("Invalid date format!")
                 continue
-            print(name, due)
+
             task = Task(name, due)
             tasks.append(task)
+            print("Task added successfully!")
 
-        elif option == '2': #View tasks
-            print("Tasks:")
-            displaying_tasks = display(tasks)
-            print("----------------------------------------------")
-            if displaying_tasks == False:
-                displaying_tasks = True
-                continue
-            option2 = None
-            while option2!='m' or option2!='M':
-                print("Press U to update a task or M to return to the main menu")
-                option2 = input("Enter your choice: ")
-                if option2 == 'U' or option2=='u':
+        elif option == '2':  # View tasks
+            while True:
+                print("Tasks:")
+                display(tasks)
+                print("\nPress 'U' to update a task or 'M' to return to the main menu")
+                option2 = input("Enter your choice: ").strip().lower()
+
+                if option2 == 'u':
                     try:
-                        id = int(input("Enter the task number to update :"))
-                        tasks = [tasks[id-1]]
-                        print("task")
-                        option3 = 0
-                        while(option3 != 3):
-                            print("----------------------------------------------")
-                            print("Current updation Task details")
-                            print("----------------------------------------------")
-                            #print("id\t\t|Name\t\t|due")
-                            #print(f"{id}\t\t|{task.get_name()}\t\t|{task.get_due()}")
-                            display(tasks)
-                            print("----------------------------------------------")
-                            print("What to edit:")
+                        id = int(input("Enter the task number to update: ")) - 1
+                        if id < 0 or id >= len(tasks):
+                            print("Invalid task number!")
+                            continue
+
+                        task = tasks[id]
+
+                        while True:
+                            print("\nCurrent Task Details:")
+                            display([task])
+
+                            print("\nWhat would you like to edit?")
                             print("1. Name")
-                            print("2. due date")
-                            print('3. Exit')
+                            print("2. Due Date")
+                            print("3. Exit")
                             option3 = input("Enter your choice: ")
+
                             if option3 == '1':
                                 name = input("Enter the new name: ")
                                 task.set_name(name)
+                                print("Task name updated successfully!")
+
                             elif option3 == '2':
-                                due = input("Enter the new due date in the format 'dd/mm/yyyy': ")
+                                due = input("Enter the new due date (dd/mm/yyyy): ")
+                                due = check(due)
+                                if not due:
+                                    print("Invalid date format!")
+                                    continue
                                 task.set_due(due)
+                                print("Task due date updated successfully!")
+
                             elif option3 == '3':
                                 break
                             else:
-                                print("Invalid option")
-                                continue
-                    except ValueError:
-                        print("Invalid task number")
-                        continue
-                elif option2 == 'M' or option2=='m':
-                    break
-                
-                else:
-                    print("Invalid option")
-                    continue
-        
-        elif option == '3': #Finish a task
-            display(tasks)
-            print("----------------------------------------------")
-            id = int(input("Enter the task number to finish :"))
-            
-            tasks.pop(id-1)
-            print("Task finished")
+                                print("Invalid option! Please try again.")
 
-        elif option == '4': #exit
+                    except ValueError:
+                        print("Invalid input! Please enter a valid task number.")
+                        continue
+
+                elif option2 == 'm':
+                    break
+                else:
+                    print("Invalid option! Please try again.")
+
+        elif option == '3':  # Finish a task
+            display(tasks)
+
+            try:
+                id = int(input("Enter the task number to finish: ")) - 1
+                if id < 0 or id >= len(tasks):
+                    print("Invalid task number!")
+                    continue
+
+                tasks.pop(id)
+                print("Task marked as completed!")
+
+            except ValueError:
+                print("Invalid input! Please enter a valid task number.")
+
+        elif option == '4':  # Exit
+            print("Thank you for using the TO-DO list!")
             break
+
         else:
-            print("Invalid option")
-print("Thank you for using the TO DO list")
+            print("Invalid option! Please try again.")
